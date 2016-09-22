@@ -1,5 +1,6 @@
 package com.lastdown.homework.homework;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -16,6 +17,7 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
+    private static final int REQUEST_CODE = 1234;
     private ListView listView;
     private TextView emptyTextView;
 
@@ -39,7 +41,7 @@ public class MainActivity extends AppCompatActivity {
 //                        .setAction("Action", null).show();
 
                 Intent intent = new Intent(MainActivity.this, AddAssignmentActivity.class);
-                startActivity(intent);
+                startActivityForResult(intent, REQUEST_CODE);
 
             }
         });
@@ -65,5 +67,26 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        //Check if the result code is the right one
+        if (resultCode == Activity.RESULT_OK) {
+
+            //Check if the request code is correct
+            if (requestCode == 1234) {
+
+                Assignment assignment = (Assignment) data.getSerializableExtra("assignment");
+                // now, do something with the received Assignment-object.
+
+
+
+            }
+
+        }
+
     }
 }
