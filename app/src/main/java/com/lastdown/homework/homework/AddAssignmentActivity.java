@@ -31,7 +31,7 @@ public class AddAssignmentActivity extends AppCompatActivity {
                         .setAction("Action", null).show();
 
                 Intent intent = new Intent();
-                Assignment newAssignment = new Assignment("Do dishes");
+                Assignment newAssignment = new Assignment(editText.getText().toString());
                 intent.putExtra("assignment", newAssignment);
                 setResult(Activity.RESULT_OK, intent);
                 finish();

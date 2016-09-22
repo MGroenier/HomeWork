@@ -13,6 +13,7 @@ import android.view.MenuItem;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
@@ -20,6 +21,8 @@ public class MainActivity extends AppCompatActivity {
     private static final int REQUEST_CODE = 1234;
     private ListView listView;
     private TextView emptyTextView;
+    private List<Assignment> assignmentList;
+    private AssignmentAdapter assignmentAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,6 +35,14 @@ public class MainActivity extends AppCompatActivity {
         emptyTextView = (TextView) findViewById(R.id.main_list_empty);
 
         listView.setEmptyView(emptyTextView);
+
+        assignmentList = new ArrayList<Assignment>();
+        assignmentAdapter = new AssignmentAdapter(this,R.layout.list_item_assignment,assignmentList);
+        listView.setAdapter(assignmentAdapter);
+
+        assignmentList.add(new Assignment("Create this application"));
+
+        assignmentAdapter.notifyDataSetChanged();
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -82,7 +93,8 @@ public class MainActivity extends AppCompatActivity {
                 Assignment assignment = (Assignment) data.getSerializableExtra("assignment");
                 // now, do something with the received Assignment-object.
 
-
+                assignmentList.add(assignment);
+                assignmentAdapter.notifyDataSetChanged();
 
             }
 
