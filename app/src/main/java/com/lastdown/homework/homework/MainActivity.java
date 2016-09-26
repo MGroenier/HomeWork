@@ -2,16 +2,22 @@ package com.lastdown.homework.homework;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
+import android.view.ContextMenu;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,8 +27,12 @@ public class MainActivity extends AppCompatActivity {
     private static final int REQUEST_CODE = 1234;
     private ListView listView;
     private TextView emptyTextView;
-    private List<Assignment> assignmentList;
+    private List<Cursor> assignmentList;
     private AssignmentAdapter assignmentAdapter;
+    private DataSource datasource;
+    private SimpleCursorAdapter simpleCursorAdapter;
+
+    public static final String EXTRA_ASSIGNMENT_ID = "extraAssignmentId";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,15 +44,22 @@ public class MainActivity extends AppCompatActivity {
         listView = (ListView) findViewById(R.id.main_list);
         emptyTextView = (TextView) findViewById(R.id.main_list_empty);
 
+        registerForContextMenu(listView);
+
         listView.setEmptyView(emptyTextView);
+        datasource = new DataSource(this);
 
-        assignmentList = new ArrayList<Assignment>();
-        assignmentAdapter = new AssignmentAdapter(this,R.layout.list_item_assignment,assignmentList);
-        listView.setAdapter(assignmentAdapter);
+        //String[] columns = new String[] { MySQLiteHelper.COLUMN_ASSIGNMENT };
+        //int[] to = new int[] { R.id.text_view_assignment_title };
+        //simpleCursorAdapter = new SimpleCursorAdapter(this, R.layout.list_item_assignment, datasource.getAllAssignmentsCursor(), columns, to, 0);
 
-        assignmentList.add(new Assignment("Create this application"));
+        String[] columns = new String[] { MySQLiteHelper.COLUMN_COURSE, MySQLiteHelper.COLUMN_ASSIGNMENT };
 
-        assignmentAdapter.notifyDataSetChanged();
+        int[] to = new int[] { R.id.list_item_1, R.id.list_item_2 };
+
+        simpleCursorAdapter = new SimpleCursorAdapter(this, R.layout.list_item, datasource.getAllAssignmentsCursor(), columns, to, 0);
+
+        listView.setAdapter(simpleCursorAdapter);
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -52,10 +69,22 @@ public class MainActivity extends AppCompatActivity {
 //                        .setAction("Action", null).show();
 
                 Intent intent = new Intent(MainActivity.this, AddAssignmentActivity.class);
-                startActivityForResult(intent, REQUEST_CODE);
+                startActivityForResult(intent, 1);
 
             }
         });
+
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Intent intent = new Intent(MainActivity.this, DetailsActivity.class);
+                intent.putExtra(EXTRA_ASSIGNMENT_ID, simpleCursorAdapter.getItemId(position));
+                startActivityForResult(intent, 2);
+
+            }
+
+        });
+
     }
 
     @Override
@@ -81,24 +110,53 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
 
-        //Check if the result code is the right one
-        if (resultCode == Activity.RESULT_OK) {
-
-            //Check if the request code is correct
-            if (requestCode == 1234) {
-
-                Assignment assignment = (Assignment) data.getSerializableExtra("assignment");
-                // now, do something with the received Assignment-object.
-
-                assignmentList.add(assignment);
-                assignmentAdapter.notifyDataSetChanged();
-
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == 1) {
+            if (resultCode == RESULT_OK) {
+                simpleCursorAdapter.changeCursor(datasource.getAllAssignmentsCursor());
+                updateAssignmentListView();
             }
-
         }
+        if (requestCode == 2) {
+            if (resultCode == RESULT_OK) {
+                updateAssignmentListView();
+            }
+        }
+    }
+
+    @Override
+
+    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
+        super.onCreateContextMenu(menu, v, menuInfo);
+        menu.setHeaderTitle("Select The Action");
+        menu.add(0, v.getId(), 0, "Delete");
+    }
+
+    @Override
+    public boolean onContextItemSelected(MenuItem item) {
+        AdapterView.AdapterContextMenuInfo itemInfo = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
+        if (item.getTitle() == "Delete") {
+            Toast.makeText(getApplicationContext(), "Assignment deleted", Toast.LENGTH_LONG).show();
+            datasource.deleteAssignment(simpleCursorAdapter.getItemId(itemInfo.position));
+            simpleCursorAdapter.changeCursor(datasource.getAllAssignmentsCursor());
+        } else {
+            return false;
+        }
+        return true;
+    }
+
+    public void updateAssignmentListView() {
+
+//        assignmentList = datasource.getAllAssignments();
+//        assignmentAdapter = new AssignmentAdapter(this, R.layout.list_item_assignment, assignmentList);
+
+        String[] columns = new String[] { MySQLiteHelper.COLUMN_COURSE, MySQLiteHelper.COLUMN_ASSIGNMENT };
+        int[] to = new int[] { R.id.list_item_1, R.id.list_item_2 };
+        simpleCursorAdapter = new SimpleCursorAdapter(this, R.layout.list_item, datasource.getAllAssignmentsCursor(), columns, to, 0);
+        listView.setAdapter(simpleCursorAdapter);
+        simpleCursorAdapter.notifyDataSetChanged();
 
     }
+
 }

@@ -27,6 +27,7 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.lastdown.homework.homework.MainActivity" />
         </activity>
+        <activity android:name=".DetailsActivity"></activity>
     </application>
 
 </manifest>

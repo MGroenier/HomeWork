@@ -8,10 +8,25 @@ import java.io.Serializable;
 
 public class Assignment implements Serializable {
 
+    private long id;
     private String title;
 
-    public Assignment(String title) {
-        this.title = title;
+    public Course getCourse() {
+        return course;
+    }
+
+    public void setCourse(Course course) {
+        this.course = course;
+    }
+
+    private Course course;
+
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
     }
 
     public String getTitle() {
@@ -22,4 +37,8 @@ public class Assignment implements Serializable {
         this.title = title;
     }
 
+    @Override
+    public String toString() {
+        return title;
+    }
 }
